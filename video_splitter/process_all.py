@@ -182,6 +182,7 @@ def analyze_cuts(
     samples = [(cut_t, cut_t + off) for cut_t in cuts for off in offsets]
     total = len(samples)
     done = [0]
+    start_time = [time.time()]
     results = []
 
     def process(item):
@@ -196,11 +197,14 @@ def analyze_cuts(
 
         with lock:
             done[0] += 1
+            elapsed = time.time() - start_time[0]
+            eta_s = (elapsed / done[0]) * (total - done[0]) if done[0] else 0
+            eta_str = f"ETA {int(eta_s//60)}m{int(eta_s%60):02d}s"
             if det.get("is_title_card"):
                 title_str = f"'{det['title']}'" if det["title"] else "(text not visible yet)"
-                print(f"    [{done[0]:3d}/{total}] cut@{hms(cut_t)} +{sample_t-cut_t:.1f}s → TITLE CARD {title_str}")
-            elif done[0] % 10 == 0:
-                print(f"    [{done[0]:3d}/{total}] cut@{hms(cut_t)} ...")
+                print(f"    [{done[0]:3d}/{total}] {eta_str}  cut@{hms(cut_t)} +{sample_t-cut_t:.1f}s → TITLE CARD {title_str}")
+            else:
+                print(f"    [{done[0]:3d}/{total}] {eta_str}  cut@{hms(cut_t)} +{sample_t-cut_t:.1f}s")
 
         return {
             "cut_t": cut_t,
