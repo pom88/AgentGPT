@@ -9,6 +9,7 @@ Usage:
     python process_all.py /path/to/RootFolder
     python process_all.py /path/to/RootFolder --interval 5 --model gemma4 --output clips.csv
     python process_all.py /path/to/RootFolder --resume   # skip already-processed videos
+    python process_all.py /path/to/RootFolder --limit 1  # test on first video only
 """
 
 import argparse
@@ -292,6 +293,8 @@ def main():
                         help=f"Output CSV path (default: {DEFAULT_OUTPUT})")
     parser.add_argument("--resume",   action="store_true",
                         help="Skip videos already present in the output CSV")
+    parser.add_argument("--limit",    type=int, default=None,
+                        help="Process only the first N videos (useful for testing)")
     args = parser.parse_args()
 
     root = Path(args.root_folder).resolve()
@@ -300,6 +303,8 @@ def main():
         sys.exit(1)
 
     videos = sorted(p for p in root.rglob("*") if p.suffix.lower() in VIDEO_EXTENSIONS)
+    if args.limit:
+        videos = videos[:args.limit]
     if not videos:
         print("No video files found.")
         sys.exit(0)
